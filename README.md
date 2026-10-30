@@ -56,11 +56,10 @@ flet run --web --host '*' --port 8000 main.py
 
 ## Ovládání
 
-- Na PDF použijte dva prsty k přiblížení a po přiblížení obraz posouvejte. Tlačítka **Přiblížit**, **Oddálit** a **Obnovit zoom** jsou také dostupná. **Vyšší kvalita** znovu vykreslí aktuální stránku v 200 DPI.
-- Tlačítka **◀ Stránka** / **Stránka ▶** mění stránku PDF; nerozhodují o klasifikaci.
-- Tlačítka **← 0** a **1 →** zůstávají dostupná i při zoomu.
-- Při základním zoomu klasifikuje vodorovný tah alespoň 90 px přes PDF vlevo/vpravo, pokud výrazně převáží nad svislým pohybem. Stejné gesto je dostupné v modrém pruhu pod obrázkem. Po zoomu je klasifikační gesto vypnuté až do **Obnovit zoom**; tah pak posouvá obraz.
-- **Předchozí dokument** umožní opravu. **Další nerozhodnutý** aktuální dokument přeskočí bez zápisu; na konci seznamu lze nerozhodnuté znovu projít.
+- Na PDF použijte dva prsty k přiblížení a po přiblížení obraz posouvejte. Stránky jednoho PDF jsou ve společném prohlížeči pod sebou. Svislým posunem uvnitř dokumentu přejdete na další stránku; okolní část aplikace zůstává na místě.
+- Horní lišta ukazuje název dokumentu, průběh klasifikace a tlačítko **← Zpět** pro opravu předchozího dokumentu. Na prvním dokumentu je návrat vypnutý.
+- Při základním zoomu klasifikuje vodorovný tah alespoň 90 px přes PDF: vlevo `0`, vpravo `1`. Při přiblížení tah posouvá obraz. Po úplném oddálení se prohlížeč srovná na 1× a klasifikační gesto znovu funguje.
+- Pokud PDF nelze načíst, lze pokus opakovat nebo dokument přeskočit bez rozhodnutí. Na konci seznamu lze nerozhodnuté dokumenty znovu projít.
 
 Po opětovném otevření prohlížeče vznikne nová relace a otevře se první dokument, jehož název není v CSV. Každé připojení drží vlastní pozici. MVP předpokládá jednoho aktivního klasifikujícího uživatele a jeden serverový proces; souběh více procesů nad stejným CSV není podporován.
 
@@ -76,10 +75,10 @@ subfolder/paper_002.pdf,1
 
 `filename` je relativní cesta k PDF s `/`, takže stejné názvy v různých podsložkách zůstanou jedinečné. Zápis používá dočasný soubor ve stejné složce, `fsync` a atomické `os.replace`. Po chybě zápisu zůstává aktuální dokument otevřený. Zdrojové PDF se nemění. Chybné CSV (hlavička, štítek, duplicita) aplikace ohlásí a nepřepíše. Chybějící nebo poškozené PDF lze zkusit znovu či přeskočit bez přiřazení štítku.
 
-`main.py` sestavuje porty `DocumentRetriever`, `ResultStore`, `PageRenderer` a `ReviewUI`. Aplikační vrstva (`ReviewApplication`, `ReviewSession`) neimportuje Flet ani PyMuPDF. Adaptéry jsou ve `src/pdf_review/adapters`; změna retrieveru, úložiště nebo UI vyžaduje jejich nahrazení v `main.py`, nikoli změnu klasifikační logiky. Renderer vykresluje pouze aktuální stránku v 150 DPI a odmítá snímky nad 12 milionů pixelů.
+`main.py` sestavuje porty `DocumentRetriever`, `ResultStore`, `PageRenderer` a `ReviewUI`. Aplikační vrstva (`ReviewApplication`, `ReviewSession`) neimportuje Flet ani PyMuPDF. Adaptéry jsou ve `src/pdf_review/adapters`; změna retrieveru, úložiště nebo UI vyžaduje jejich nahrazení v `main.py`, nikoli změnu klasifikační logiky. UI postupně vykreslí pouze stránky právě otevřeného dokumentu v 150 DPI; renderer odmítá jednotlivé snímky nad 12 milionů pixelů.
 
 ## Ověření a omezení
 
-Automatické testy pokrývají klasifikaci, obnovení, opravy, chyby, CSV, bezpečné čtení složky, vykreslení jedno- a dvoustránkových PDF, sestavení obrazovky s instalovaným Flet API, asynchronní start Fletu, cestu od UI akce k uložení a test směru a prahu gesta. Na Raspberry Pi 5 / Linux ARM64 / Python 3.13 prošla čistá instalace a 16 testů; lokální Flet server vrátil HTTP 200. **Mobilní prohlížeč nebyl k dispozici**. Headless Chromium v tomto prostředí spadl s kódem 133 a Firefox zachytil jen úvodní obrazovku Fletu. Zobrazení hotového UI v telefonu, pinch-to-zoom a souběh gest proto nebyly ručně ověřeny. Klasifikační tlačítka a samostatný pruh zůstávají záložním ovládáním. Před nasazením projděte ruční scénář z `context.md`, zejména zoom, gesto, opravu a obnovení relace.
+Automatické testy pokrývají klasifikaci, obnovení, opravy, chyby, CSV, bezpečné čtení složky, vykreslení jedno- a dvoustránkových PDF, sestavení obrazovky s instalovaným Flet API, asynchronní start Fletu, cestu od UI akce k uložení, svislé zobrazení stránek, stále dostupný návrat, směr a práh gesta i automatický reset po oddálení. Na Raspberry Pi 5 / Linux ARM64 / Python 3.13 prošla čistá instalace; lokální Flet server vrátil HTTP 200. **Mobilní prohlížeč nebyl k dispozici**. Headless Chromium v tomto prostředí spadl s kódem 133 a Firefox zachytil jen úvodní obrazovku Fletu. Zobrazení hotového UI v telefonu, pinch-to-zoom a souběh gest proto nebyly ručně ověřeny. Před nasazením projděte ruční scénář z `context.md`, zejména zoom, gesto, opravu a obnovení relace.
 
 Dokumentace API: [Flet InteractiveViewer](https://flet.dev/docs/controls/interactiveviewer/), [Flet GestureDetector](https://flet.dev/docs/controls/gesturedetector/), [dynamický Flet web](https://flet.dev/docs/publish/web/dynamic-website/), [PyMuPDF renderování](https://pymupdf.readthedocs.io/en/latest/recipes-images.html).
