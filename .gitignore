@@ -15,3 +15,5 @@ dist/
 *.egg-info/
 results/
 documents/
+# New PDF files stay local; the two committed examples remain tracked.
+*.[pP][dD][fF]
