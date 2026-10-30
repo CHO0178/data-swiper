@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "data-swiper"
+version = "0.1.0"
+description = "Mobile PDF review with durable CSV classifications"
+requires-python = ">=3.11"
+dependencies = [
+    "flet==0.86.5",
+    # The configured piwheels mirror serves a 24 kB flet-web wheel without its web assets.
+    "flet-web @ https://files.pythonhosted.org/packages/34/43/0b203fcf948e60d7d31230e5941ea5fcfb1d9b9f06add98625a73af71a60/flet_web-0.86.5-py3-none-any.whl#sha256=d47dc7090e0d818939a70074d4e84d3012f4ebf57a3ff14d964d207cb5b1d6ba",
+    "fastapi==0.115.12",
+    "PyMuPDF==1.28.2",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,2 @@
+# Install the application and its pinned runtime dependencies from pyproject.toml.
+-e .
